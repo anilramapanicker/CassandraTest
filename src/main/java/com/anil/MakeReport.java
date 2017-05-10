@@ -56,11 +56,17 @@ public class MakeReport implements Serializable {
         cassandraoptions.put("keyspace","ubs");
         Dataset<Row> df = spark.read().format("org.apache.spark.sql.cassandra").options(cassandraoptions).load();
         df.createOrReplaceTempView("people");
-        Dataset<Row> df2 = spark.sql("select * from people WHERE age<40");
+        //Dataset<Row> df2 = spark.sql("select * from people WHERE age<40");
+        // Add as a Lambda
+        ReportQuery rq = (q) -> spark.sql(q);
+        Dataset<Row> df2 = rq.doQuery("select * from people WHERE age<40");
         df2.show();
         df2.write().saveAsTable("people2");
 
 
+    }
+    interface ReportQuery{
+        Dataset<Row> doQuery(String query);
     }
 
     public static void main(String[] args) {
